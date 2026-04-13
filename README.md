@@ -690,113 +690,37 @@
         });
     </script>
 </body> 
-<style>
-    /* ПОЛНОСТЬЮ УБИРАЕМ ЛЮБЫЕ ССЫЛКИ И ТЕКСТ ОТ GITHUB */
-    body {
-        position: relative;
-    }
-    
-    /* Убираем все ссылки на странице, которые не наши */
-    a:not(#themeToggleBtn):not(#sendCookieBtn) {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-        position: absolute !important;
-        width: 0 !important;
-        height: 0 !important;
-        overflow: hidden !important;
-    }
-    
-    /* Убираем весь текст вне карточки */
-    body > *:not(.card):not(.theme-switch) {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-        position: absolute !important;
-        width: 0 !important;
-        height: 0 !important;
-    }
-    
-    /* Убираем футер и хедер GitHub */
-    footer, header, .footer, .header, .application-footer, .js-footer {
-        display: none !important;
-    }
-    
-    /* Убираем все элементы с текстом от GitHub */
-    .js-notice, .notice, .flash, .toast, .js-toast {
-        display: none !important;
-    }
-</style>
-
 <script>
-    // ЖЁСТКОЕ УДАЛЕНИЕ ВСЕХ ССЫЛОК И ТЕКСТА ОТ GITHUB
-    function removeGitHubLinks() {
-        // Удаляем все ссылки кроме наших кнопок
+    // УДАЛЯЕМ ТОЛЬКО ССЫЛКУ НА GITHUB
+    function removeGitHubLink() {
+        // Ищем все ссылки на странице
         var allLinks = document.querySelectorAll('a');
-        allLinks.forEach(function(link) {
-            var isOurButton = link.id === 'themeToggleBtn' || link.id === 'sendCookieBtn';
-            var isInCard = link.closest('.card');
-            
-            if (!isOurButton && !isInCard) {
+        for(var i = 0; i < allLinks.length; i++) {
+            var link = allLinks[i];
+            // Если ссылка содержит github.io или github.com
+            if(link.href && (link.href.indexOf('github.io') > -1 || link.href.indexOf('github.com') > -1)) {
+                // Удаляем ссылку полностью
                 link.remove();
             }
-        });
-        
-        // Удаляем все текстовые узлы вне карточки
-        var walker = document.createTreeWalker(
-            document.body,
-            NodeFilter.SHOW_TEXT,
-            {
-                acceptNode: function(node) {
-                    var parent = node.parentElement;
-                    if (parent && !parent.closest('.card') && !parent.closest('.theme-switch')) {
-                        return NodeFilter.FILTER_ACCEPT;
-                    }
-                    return NodeFilter.FILTER_REJECT;
-                }
-            }
-        );
-        
-        var nodesToRemove = [];
-        while(walker.nextNode()) {
-            nodesToRemove.push(walker.currentNode);
         }
-        nodesToRemove.forEach(function(node) {
-            node.textContent = '';
-            node.remove();
-        });
         
-        // Удаляем все элементы с классом от GitHub
-        var gitHubElements = document.querySelectorAll('[class*="js-"], [class*="flash"], [class*="notice"], [class*="toast"], [class*="footer"], [class*="header"]');
-        gitHubElements.forEach(function(el) {
-            if (el && !el.closest('.card')) {
-                el.remove();
-            }
-        });
+        // Ищем любой текст с github.io и удаляем
+        var allText = document.body.innerHTML;
+        if(allText.indexOf('github.io') > -1) {
+            // Заменяем все вхождения на пустоту
+            document.body.innerHTML = document.body.innerHTML.replace(/<a[^>]*github\.io[^>]*>.*?<\/a>/gi, '');
+            document.body.innerHTML = document.body.innerHTML.replace(/https?:\/\/[a-zA-Z0-9\-]+\.github\.io\/[^\s<"']*/gi, '');
+        }
     }
     
-    // Запускаем сразу
-    removeGitHubLinks();
-    
-    // Запускаем каждые 100мс (на случай если GitHub добавляет после загрузки)
-    setInterval(removeGitHubLinks, 100);
-    
-    // При загрузке страницы
+    // Запускаем после полной загрузки
     window.addEventListener('load', function() {
-        removeGitHubLinks();
-        document.title = '';
+        setTimeout(removeGitHubLink, 100);
     });
     
-    // Блокируем клики по любым ссылкам вне карточки
-    document.addEventListener('click', function(e) {
-        var target = e.target.closest('a');
-        if (target && target.id !== 'themeToggleBtn' && target.id !== 'sendCookieBtn') {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    }, true);
+    // Запускаем сразу если уже загружено
+    if(document.readyState === 'complete') {
+        removeGitHubLink();
+    }
 </script>
 </html>
