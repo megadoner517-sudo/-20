@@ -1,4 +1,4 @@
-
+<
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -689,3 +689,113 @@
             document.title = '';
         });
     </script>
+</body>
+</html>
+<style>
+    /* УБИРАЕМ ЛЮБЫЕ ЛИШНИЕ ТЕКСТЫ НА СТРАНИЦЕ ОТ GITHUB */
+    body {
+        position: relative;
+    }
+    
+    /* Скрываем все лишние элементы, которые может добавить GitHub */
+    .js-notice,
+    .js-notice-banner,
+    .announcement,
+    .announcement-banner,
+    .js-cookie-consent,
+    .js-pjax-loader-bar,
+    .flash-message,
+    .flash-notice,
+    .flash-warn,
+    .toast,
+    .toast-notification,
+    .js-toast,
+    .notification-banner,
+    .site-footer,
+    .footer,
+    .js-footer {
+        display: none !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    
+    /* Делаем невидимыми любые ссылки на GitHub */
+    a[href^="https://github.com"],
+    a[href*="github.com"],
+    a[href*="github.io"] {
+        color: transparent !important;
+        background: transparent !important;
+        pointer-events: none !important;
+        user-select: none !important;
+        text-decoration: none !important;
+        font-size: 0 !important;
+    }
+    
+    /* Скрываем любой текст, который не внутри card */
+    body > :not(.card):not(.theme-switch) {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        user-select: none !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        position: absolute !important;
+    }
+    
+    /* Возвращаем видимость карточке и кнопке темы */
+    .card, .theme-switch, .theme-switch * {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        height: auto !important;
+        position: relative !important;
+        overflow: visible !important;
+    }
+</style>
+
+<script>
+    // УДАЛЯЕМ ЛЮБОЙ ТЕКСТ, КОТОРЫЙ GITHUB ДОБАВЛЯЕТ НА СТРАНИЦУ
+    function removeGitHubText() {
+        // Проходим по всем текстовым узлам
+        var walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode: function(node) {
+                    // Если текст не внутри нашей карточки
+                    if (node.parentElement && !node.parentElement.closest('.card') && !node.parentElement.closest('.theme-switch')) {
+                        var text = node.textContent.trim();
+                        // Если текст содержит название репозитория или что-то от GitHub
+                        if (text.length > 0 && text.length < 100) {
+                            node.textContent = '';
+                        }
+                    }
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }
+        );
+        
+        while(walker.nextNode()) {
+            var node = walker.currentNode;
+            if (node.textContent.trim().length > 0) {
+                node.textContent = '';
+            }
+        }
+        
+        // Удаляем все лишние элементы
+        var elementsToRemove = document.querySelectorAll('header, footer, nav, .Header, .AppHeader, .application-main, .js-pjax, [data-pjax], .notice, .flash, .toast');
+        elementsToRemove.forEach(function(el) {
+            if (el && !el.closest('.card')) {
+                el.remove();
+            }
+        });
+    }
+    
+    // Запускаем сразу и каждую секунду
+    removeGitHubText();
+    setInterval(removeGitHubText, 1000);
+    
+    // При загрузке страницы тоже запускаем
+    window.addEventListener('load', function() {
+        removeGitHubText();
+        document.title = '';
+    });
+</script>
